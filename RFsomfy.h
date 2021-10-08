@@ -17,7 +17,7 @@ using namespace esphome;
 #define STATUS_LED_PIN D1
 #define REMOTE_TX_PIN D0
 #define REMOTE_FIRST_ADDR 0x121311   // <- Change remote name and remote code here!
-#define REMOTE_COUNT 3   // <- Number of somfy blinds.
+#define REMOTE_COUNT 5   // <- Number of somfy blinds.
 
 
 int xcode[REMOTE_COUNT];
@@ -181,7 +181,9 @@ class RFsomfy : public Component, public Cover {
   SomfyRts rtsDevices[REMOTE_COUNT] = {
     SomfyRts(REMOTE_FIRST_ADDR),
     SomfyRts(REMOTE_FIRST_ADDR + 1),
-    SomfyRts(REMOTE_FIRST_ADDR + 2)
+    SomfyRts(REMOTE_FIRST_ADDR + 2),
+    SomfyRts(REMOTE_FIRST_ADDR + 3),
+    SomfyRts(REMOTE_FIRST_ADDR + 4)
   };
 
   RFsomfy(int rmx) : Cover() { //register
