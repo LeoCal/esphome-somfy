@@ -1,73 +1,73 @@
 esphome:
-  name: esp_somfy
+  name: blinds-control
   platform: ESP8266
-  board: d1_mini_lite
-  
-  arduino_version: espressif8266@2.3.2
-  
+  board: d1_mini
+
   includes:
     - RFsomfy.h
     - SomfyRts.h
     - SomfyRts.cpp
-    
-#  libraries:
-#    - Ticker
-
-  comment: versao 2 - 10/abr/2020
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-  use_address: 192.168.50.12
-  manual_ip:
-    static_ip: 192.168.50.12
-    gateway: 192.168.50.1
-    subnet: 255.255.255.0
-
-web_server:
-  port: 80
 
 # Enable logging
 logger:
-  level: DEBUG
-  esp8266_store_log_strings_in_flash: False
-  baud_rate: 115200
 
-
+# Enable Home Assistant API
 api:
-  password: !secret api_pass
 
 ota:
-  password: !secret ota_pass
+  password: "3e92ff9cbb95fdb1181b2d7b0f9cda09"
 
+wifi:
+  ssid: "Superman2"
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Blinds-Control Hotspot"
+    password: "r3ODqKLg6mv4"
+
+captive_portal:
+
+web_server:
+  port: 80
 
 cover:
 - platform: custom
   lambda: |-
     std::vector<Cover *> covers;
     auto rfSomfy0 = new RFsomfy(0);
-    rfSomfy0->set_code(50);
     App.register_component(rfSomfy0);
     auto rfSomfy1 = new RFsomfy(1);
-    rfSomfy1->set_code(100);  // Set initial rolling code. After it works, remove this line.
     App.register_component(rfSomfy1);
     auto rfSomfy2 = new RFsomfy(2);
     App.register_component(rfSomfy2);
+    auto rfSomfy3 = new RFsomfy(3);
+    App.register_component(rfSomfy3);
+    auto rfSomfy4 = new RFsomfy(4);
+    App.register_component(rfSomfy4);
     covers.push_back(rfSomfy0);
     covers.push_back(rfSomfy1);
     covers.push_back(rfSomfy2);
+    covers.push_back(rfSomfy3);
+    covers.push_back(rfSomfy4);
     return {covers};
 
   covers:
-    - name: "Blind 2"
+    - name: "Tapparella balcone"
       device_class: shade
       id: somfy0
-    - name: "Veneziana casal"
+    - name: "Tapparella soggiorno"
       device_class: shutter
       id: somfy1
-    - name: "Veneziana roxo"
+    - name: "Tapparella centrale"
       device_class: shutter
       id: somfy2
+    - name: "Tapparella cucina"
+      device_class: shutter
+      id: somfy3
+    - name: "Tapparelle"
+      device_class: shutter
+      id: somfy4
 
 text_sensor:
   - platform: version
@@ -79,7 +79,7 @@ text_sensor:
       return {rfSomfyInfo};
     text_sensors:
       name: "RFsomfy info"
-    
+
 binary_sensor:
   - platform: status
     name: "RFsomfy status"
