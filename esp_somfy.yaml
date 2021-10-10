@@ -1,7 +1,8 @@
 esphome:
-  name: blinds-control
+  name: esp_somfy
   platform: ESP8266
   board: d1_mini
+  arduino_version: espressif8266@2.3.2
 
   includes:
     - RFsomfy.h
