@@ -14,7 +14,8 @@ using namespace esphome;
 // cmd 81 - Get all rolling code
 // cmd 85 - Write new rolling codes
 
-#define STATUS_LED_PIN D1
+//NOTE: Need to uncomment this in case I want to add a LED to the circuit
+//#define STATUS_LED_PIN D1
 #define REMOTE_TX_PIN D0
 #define REMOTE_FIRST_ADDR 0x121311   // <- Change remote name and remote code here!
 #define REMOTE_COUNT 5   // <- Number of somfy blinds.
@@ -45,7 +46,7 @@ uint16_t getCodeFromFile(int remoteId) {
   if (SPIFFS.exists(arq)) {
     Serial.println("Reading config");
     //ESP_LOGI("file", "Reading config");
-    ESP_LOGI("Arq", string2char(arq));
+    //ESP_LOGI("Arq", string2char(arq));
     File f = SPIFFS.open(arq, "r");
     if (f) {
       String line = f.readStringUntil('\n');
@@ -114,8 +115,10 @@ class RFsomfy : public Component, public Cover {
   /*
   void tickLed(void) {
       //toggle state
+      #ifdef STATUS_LED_PIN
       int state = digitalRead(STATUS_LED_PIN);
       digitalWrite(STATUS_LED_PIN, !state);
+      #endif
   }
   usar ticker.attach_ms(50, RFsomfy::tickLed);
   */
@@ -197,8 +200,10 @@ class RFsomfy : public Component, public Cover {
     ESP_LOGD("RFsomfy", "Starting Device");
     Serial.begin(115200);
     Serial.println("Initialize remote devices");
+    #ifdef STATUS_LED_PIN
     pinMode(STATUS_LED_PIN, OUTPUT);
     digitalWrite(STATUS_LED_PIN, HIGH);
+    #endif
     ESP_LOGD("RFsomfy","Somfy ESPHome Cover v0.12");
     ESP_LOGD("RFsomfy","Initialize remote devices");
     for (int i=0; i<REMOTE_COUNT; i++) {
@@ -212,7 +217,9 @@ class RFsomfy : public Component, public Cover {
       xcode[i] = i;
     }
 
+    #ifdef STATUS_LED_PIN
     digitalWrite(STATUS_LED_PIN, LOW);
+    #endif
 
     //  testFs();
     getCodeFromAllFiles();
@@ -242,7 +249,9 @@ class RFsomfy : public Component, public Cover {
   void control(const CoverCall &call) override {
     // This will be called every time the user requests a state change.
     
+    #ifdef STATUS_LED_PIN
     digitalWrite(STATUS_LED_PIN, HIGH);
+    #endif
     delay(50);
     
     ESP_LOGW("RFsomfy", "Using remote %d", REMOTE_FIRST_ADDR + index);
@@ -294,19 +303,25 @@ class RFsomfy : public Component, public Cover {
       
       if (xpos == 11) {
         ESP_LOGD("tilt","program mode");
+        #ifdef STATUS_LED_PIN
         digitalWrite(STATUS_LED_PIN, HIGH);
+        #endif
         rtsDevices[remoteId].sendCommandProg();
         delay(1000);
       }
       if (xpos == 16) {
         ESP_LOGD("tilt","program mode - grail");
+        #ifdef STATUS_LED_PIN
         digitalWrite(STATUS_LED_PIN, HIGH);
+        #endif
         rtsDevices[remoteId].sendCommandProgGrail();
         delay(1000);
       }
       if (xpos == 21) {
         ESP_LOGD("tilt","delete file");
+        #ifdef STATUS_LED_PIN
         digitalWrite(STATUS_LED_PIN, HIGH);
+        #endif
         delete_code(remoteId);
         delay(1000);
       }
@@ -323,7 +338,7 @@ class RFsomfy : public Component, public Cover {
             str += "\r\n";
         }
         Serial.print(str);
-        ESP_LOGD("files", string2char(str));
+        //ESP_LOGD("files", string2char(str));
         SPIFFS.end();
       }
       
@@ -384,7 +399,9 @@ class RFsomfy : public Component, public Cover {
     */ 
   }
     
+    #ifdef STATUS_LED_PIN
     digitalWrite(STATUS_LED_PIN, LOW);
+    #endif
     delay(50);
     
   }
