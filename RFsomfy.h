@@ -2,7 +2,7 @@
 using namespace esphome;
 #include <SomfyRts.h>
 #include <Ticker.h>
-#include "LittleFS.h"
+#include "FS.h"
 
 // cmd 11 - program mode
 // cmd 16 - porgram mode for grail curtains
@@ -40,13 +40,13 @@ String file_path(int remoteId) {
 
 uint16_t getCodeFromFile(int remoteId) {
   uint16_t code = 0;
-  LittleFS.begin();
+  SPIFFS.begin();
   String arq = file_path(remoteId);
-  if (LittleFS.exists(arq)) {
+  if (SPIFFS.exists(arq)) {
     Serial.println("Reading config");
-    ESP_LOGI("file", "Reading config");
-    //ESP_LOGI("Arq", string2char(arq));
-    File f = LittleFS.open(arq, "r");
+    //ESP_LOGI("file", "Reading config");
+    ESP_LOGI("Arq", string2char(arq));
+    File f = SPIFFS.open(arq, "r");
     if (f) {
       String line = f.readStringUntil('\n');
       code = line.toInt();
@@ -58,7 +58,7 @@ uint16_t getCodeFromFile(int remoteId) {
       code = -1;
     }
   }
-  LittleFS.end();
+  SPIFFS.end();
   return code;
 }
 
@@ -75,10 +75,10 @@ void getCodeFromAllFiles() {
 }
 
 void writeCode2file(int remoteId, uint16_t code) {
-  LittleFS.begin();
+  SPIFFS.begin();
   Serial.println("Writing config");
   String arq = file_path(remoteId);
-  File f = LittleFS.open(arq, "w");
+  File f = SPIFFS.open(arq, "w");
   if (f) {
     f.println(code);
     f.close();
@@ -87,7 +87,7 @@ void writeCode2file(int remoteId, uint16_t code) {
   else {
     ESP_LOGW("somfy","File creation failed");
   }
-  LittleFS.end();
+  SPIFFS.end();
 }
 
 
@@ -124,7 +124,7 @@ class RFsomfy : public Component, public Cover {
     {
         ESP_LOGW("info","Readfile");
         Serial.println("reading");
-        File f = LittleFS.open("/myFile.txt", "r");
+        File f = SPIFFS.open("/myFile.txt", "r");
         if (!f) {
             Serial.println("file not available");
             ESP_LOGW("info","Readfile-File not avaliable");
@@ -146,7 +146,7 @@ class RFsomfy : public Component, public Cover {
     {
     ESP_LOGW("info","writefile");
     Serial.println("writing");
-    File f = LittleFS.open("/myFile.txt", "w");
+    File f = SPIFFS.open("/myFile.txt", "w");
     if (!f) {
         Serial.println("File creation failed");
         ESP_LOGW("info","writefile-failed");
@@ -164,7 +164,7 @@ class RFsomfy : public Component, public Cover {
     void testFs() {
         ESP_LOGW("tilt","Testing filesystem!");
         Serial.begin(115200);
-        if (!LittleFS.begin()) {
+        if (!SPIFFS.begin()) {
             ESP_LOGW("tilt","error while mounting filesystem!");
             Serial.println("error while mounting filesystem!");
         } else {
@@ -173,7 +173,7 @@ class RFsomfy : public Component, public Cover {
             readFile();
             Serial.println("done");
         }
-        LittleFS.end();
+        SPIFFS.end();
     }
 
   
@@ -220,13 +220,13 @@ class RFsomfy : public Component, public Cover {
 
   // delete rolling code . 0....n
   void delete_code(int remoteId) {
-      LittleFS.begin();
+      SPIFFS.begin();
       String path = file_path(remoteId);
       Serial.println(path);
-      // LittleFS.remove(path);
+      // SPIFFS.remove(path);
       Serial.println("Deleted");
       ESP_LOGD("RFsomfy","Deleted remote %i", remoteId);
-      LittleFS.end();
+      SPIFFS.end();
   }
 
 
@@ -314,8 +314,8 @@ class RFsomfy : public Component, public Cover {
       if (xpos == 41) {
         ESP_LOGD("tilt","List Files");
         String str = "";
-        LittleFS.begin();
-        Dir dir = LittleFS.openDir("/");
+        SPIFFS.begin();
+        Dir dir = SPIFFS.openDir("/");
         while (dir.next()) {
             str += dir.fileName();
             str += " / ";
@@ -323,8 +323,8 @@ class RFsomfy : public Component, public Cover {
             str += "\r\n";
         }
         Serial.print(str);
-        //ESP_LOGD("files", string2char(str));
-        LittleFS.end();
+        ESP_LOGD("files", string2char(str));
+        SPIFFS.end();
       }
       
      if (xpos == 51) {
@@ -334,17 +334,17 @@ class RFsomfy : public Component, public Cover {
       
      if (xpos == 61) {
         ESP_LOGD("tilt","61 mode");
-        LittleFS.begin();
+        SPIFFS.begin();
 
-        if (!LittleFS.exists("/formatComplete.txt")) {
-            Serial.println("Please wait 30 secs for LittleFS to be formatted");
+        if (!SPIFFS.exists("/formatComplete.txt")) {
+            Serial.println("Please wait 30 secs for SPIFFS to be formatted");
             ESP_LOGW("file", "Please wait 30 s");
-            LittleFS.format();
+            SPIFFS.format();
             delay(30000);
             Serial.println("Spiffs formatted");
             ESP_LOGW("file", "Spiffs formatted");
         
-        File f = LittleFS.open("/formatComplete.txt", "w");
+        File f = SPIFFS.open("/formatComplete.txt", "w");
         if (!f) {
             Serial.println("file open failed");
             ESP_LOGW("file", "file open failed");
@@ -353,10 +353,10 @@ class RFsomfy : public Component, public Cover {
             ESP_LOGW("file", "Format Complete");
         } 
         } else {
-            Serial.println("LittleFS is formatted. Moving along...");
-            ESP_LOGW("file", "LittleFS is formatted. Moving along...");
+            Serial.println("SPIFFS is formatted. Moving along...");
+            ESP_LOGW("file", "SPIFFS is formatted. Moving along...");
         }
-        LittleFS.end();
+        SPIFFS.end();
      }
      
      if (xpos == 71) {
