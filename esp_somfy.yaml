@@ -4,6 +4,7 @@ esphome:
   board: d1_mini
   platformio_options:
      board_build.filesystem: littlefs
+     board_build.ldscript: eagle.flash.4m3m.ld
   includes:
     - RFsomfy.h
     - SomfyRts.h
