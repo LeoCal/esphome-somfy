@@ -61,7 +61,7 @@ cover:
 
   covers:
     - name: "Tapparella balcone"
-      device_class: shade
+      device_class: shutter
       id: somfy0
     - name: "Tapparella soggiorno"
       device_class: shutter
