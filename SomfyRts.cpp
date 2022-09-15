@@ -220,7 +220,7 @@ void SomfyRts::_writeRemoteRollingCode(uint16_t code) {
   if (f) {
     f.println(code);
     f.close();
-    Serial.print("Writed code:");
+    Serial.print("Written code:");
     Serial.println(code);
   }
   else {

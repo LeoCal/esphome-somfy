@@ -85,7 +85,7 @@ void writeCode2file(int remoteId, uint16_t code) {
   if (f) {
     f.println(code);
     f.close();
-    ESP_LOGI("somfy", "Writed code: %d", code);
+    ESP_LOGI("somfy", "Written code: %d", code);
   }
   else {
     ESP_LOGW("somfy","File creation failed");
