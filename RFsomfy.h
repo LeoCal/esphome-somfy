@@ -3,6 +3,8 @@ using namespace esphome;
 #include <SomfyRts.h>
 #include <Ticker.h>
 #include "FS.h"
+#include <LITTLEFS.h>
+#define SPIFFS LittleFS
 
 // cmd 11 - program mode
 // cmd 16 - porgram mode for grail curtains

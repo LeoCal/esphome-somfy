@@ -1,5 +1,7 @@
 #include "SomfyRts.h"
 #include <FS.h>
+#include <LITTLEFS.h>
+#define SPIFFS LittleFS
 
 SomfyRts::SomfyRts(uint32_t remoteID, bool debug) {
     _debug = debug;
@@ -187,7 +189,9 @@ void SomfyRts::sendCommandProgGrail() {
 
 uint16_t SomfyRts::_readRemoteRollingCode() {
   uint16_t code = 0;
-  SPIFFS.begin();
+  if (!SPIFFS.begin()) {
+    Serial.println("Failed to mount file system");
+  }
   if (SPIFFS.exists(_getConfigFilename())) {
     Serial.println("Reading config");
     File f = SPIFFS.open(_getConfigFilename(), "r");
@@ -208,7 +212,9 @@ uint16_t SomfyRts::_readRemoteRollingCode() {
 
 void SomfyRts::_writeRemoteRollingCode(uint16_t code) {
 
-  SPIFFS.begin();
+  if (!SPIFFS.begin()) {
+    Serial.println("Failed to mount file system");
+  }
   Serial.println("Writing config");
   File f = SPIFFS.open(_getConfigFilename(), "w");
   if (f) {
