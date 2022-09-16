@@ -18,8 +18,6 @@ using namespace esphome;
 // cmd 81 - Get all rolling code
 // cmd 85 - Write new rolling codes
 
-//NOTE: Need to uncomment this in case I want to add a LED to the circuit
-//#define STATUS_LED_PIN D1
 #define REMOTE_TX_PIN D0
 #define REMOTE_FIRST_ADDR 0x121311   // <- Change remote name and remote code here!
 #define REMOTE_COUNT 5   // <- Number of somfy blinds.
@@ -137,15 +135,6 @@ class RFsomfy : public Component, public Cover {
     xcode[remoteId] = code;
   }
 
-  #ifdef STATUS_LED_PIN
-  void tickLed(void) {
-    //toggle state
-    int state = digitalRead(STATUS_LED_PIN);
-    digitalWrite(STATUS_LED_PIN, !state);
-  }
-  ticker.attach_ms(50, RFsomfy::tickLed);
-  #endif
-  
   void readFile() {
     ESP_LOGI("info","Reading file");
     File f = SPIFFS.open("/myFile.txt", "r");
@@ -207,15 +196,6 @@ class RFsomfy : public Component, public Cover {
     rtsDevices[index].init();
     xcode[index] = index;
 
-    #ifdef STATUS_LED_PIN
-    pinMode(STATUS_LED_PIN, OUTPUT);
-    digitalWrite(STATUS_LED_PIN, HIGH);
-    #endif
-
-    #ifdef STATUS_LED_PIN
-    digitalWrite(STATUS_LED_PIN, LOW);
-    #endif
-
     /* Get rolling code from file */
     xcode[index] = getCodeFromFile(index);
     ESP_LOGI("somfy", "Remoteid: %d - Code: %d", REMOTE_FIRST_ADDR + index, xcode[index]);
@@ -249,11 +229,6 @@ class RFsomfy : public Component, public Cover {
   /* Mandatory method for custom covers in ESPHome
      This will be called every time the user requests a state change */
   void control(const CoverCall &call) override {
-    
-    #ifdef STATUS_LED_PIN
-    digitalWrite(STATUS_LED_PIN, HIGH);
-    delay(50);
-    #endif
     
     ESP_LOGI("somfy", "Using remote %d", REMOTE_FIRST_ADDR + index);
     ESP_LOGI("somfy", "Remoteid %d", remoteId);
@@ -319,25 +294,16 @@ class RFsomfy : public Component, public Cover {
 
       if (xpos == 11) {
         ESP_LOGI("tilt","program mode");
-        #ifdef STATUS_LED_PIN
-        digitalWrite(STATUS_LED_PIN, HIGH);
-        #endif
         rtsDevices[remoteId].sendCommandProg();
         delay(1000);
       }
       if (xpos == 16) {
         ESP_LOGI("tilt","program mode - grail");
-        #ifdef STATUS_LED_PIN
-        digitalWrite(STATUS_LED_PIN, HIGH);
-        #endif
         rtsDevices[remoteId].sendCommandProgGrail();
         delay(1000);
       }
       if (xpos == 21) {
         ESP_LOGI("tilt","delete file");
-        #ifdef STATUS_LED_PIN
-        digitalWrite(STATUS_LED_PIN, HIGH);
-        #endif
         delete_code(remoteId);
         delay(1000);
       }
@@ -410,10 +376,6 @@ class RFsomfy : public Component, public Cover {
       this->publish_state();
       */ 
     }
-    
-    #ifdef STATUS_LED_PIN
-    digitalWrite(STATUS_LED_PIN, LOW);
-    #endif
     delay(50);
   }
 };
