@@ -42,15 +42,15 @@ cover:
 - platform: custom
   lambda: |-
     std::vector<Cover *> covers;
-    auto rfSomfy0 = new RFsomfy(0);
+    auto rfSomfy0 = new RFsomfy(0, 58, 56);
     App.register_component(rfSomfy0);
-    auto rfSomfy1 = new RFsomfy(1);
+    auto rfSomfy1 = new RFsomfy(1, 39, 38);
     App.register_component(rfSomfy1);
-    auto rfSomfy2 = new RFsomfy(2);
+    auto rfSomfy2 = new RFsomfy(2, 39, 38);
     App.register_component(rfSomfy2);
-    auto rfSomfy3 = new RFsomfy(3);
+    auto rfSomfy3 = new RFsomfy(3, 57, 56);
     App.register_component(rfSomfy3);
-    auto rfSomfy4 = new RFsomfy(4);
+    auto rfSomfy4 = new RFsomfy(4, 39, 38);
     App.register_component(rfSomfy4);
     covers.push_back(rfSomfy0);
     covers.push_back(rfSomfy1);

@@ -5,8 +5,6 @@ using namespace esphome;
 #include "FS.h"
 #include <LITTLEFS.h>
 #define SPIFFS LittleFS
-#define OPENING_TIME 30 /* seconds */
-#define OPENING_TIME_MS OPENING_TIME*1000 /* milliseconds */
 
 // cmd 11 - program mode
 // cmd 16 - porgram mode for grail curtains
@@ -123,6 +121,7 @@ class RFsomfy : public Component, public Cover {
 
   private:
   int index;
+  uint16_t open_time_ms, close_time_ms;
   Ticker ticker;
 
   public:
@@ -184,9 +183,12 @@ class RFsomfy : public Component, public Cover {
     SomfyRts(REMOTE_FIRST_ADDR + 4)
   };
 
-  RFsomfy(int id) : Cover() { //register
+  RFsomfy(int id, uint16_t open_time, uint16_t close_time) : Cover() { //register
     index = id;
     remoteId = index;
+    /* Convert opening and closing time from seconds to msec */
+    open_time_ms = open_time * 1000;
+    close_time_ms = close_time * 1000;
     ESP_LOGI("somfy", "Cover %d", index);
   }
 
@@ -236,13 +238,13 @@ class RFsomfy : public Component, public Cover {
     
     if (call.get_position().has_value()) {
       uint16_t curr_ppos = getPositionFromFile(REMOTE_FIRST_ADDR + index);
-      ESP_LOGI("somfy", "curr_position is: %u", curr_ppos);
+      ESP_LOGI("somfy", "current position is: %u", curr_ppos);
       float curr_pos = ((float)curr_ppos)/100;
 
       // Write pos (range 0-1) to cover
       float pos = *call.get_position();
       uint16_t ppos = pos * 100;
-      ESP_LOGI("somfy", "get_position is: %u", ppos);
+      ESP_LOGI("somfy", "target position is: %u", ppos);
 
       if (ppos == 0) {
         ESP_LOGI("somfy","POS 0 - Send command Down");
@@ -253,23 +255,21 @@ class RFsomfy : public Component, public Cover {
         rtsDevices[remoteId].sendCommandUp();
         pos = 1.00;
       } else {
+        float delta_pos = abs(pos - curr_pos);
+        int delta_delay;
         if (ppos > curr_ppos) {
-          float delta_pos = pos - curr_pos;
-          int delta_delay = delta_pos * OPENING_TIME_MS;
+          delta_delay = delta_pos * open_time_ms;
+          ESP_LOGI("somfy", "POS %u - Send command Up, wait %.2f seconds and then send command Stop",
+                   ppos, (float)delta_delay/1000);
           rtsDevices[remoteId].sendCommandUp();
-          ESP_LOGI("somfy", "POS %u", ppos);
-          ESP_LOGI("somfy", "Send command Up, wait %u seconds and then send command Stop", (int)(delta_delay/1000));
-          delay(delta_delay);
-          rtsDevices[remoteId].sendCommandStop();
         } else {
-          float delta_pos = curr_pos - pos;
-          int delta_delay = delta_pos * OPENING_TIME_MS;
+          delta_delay = delta_pos * close_time_ms;
+          ESP_LOGI("somfy", "POS %u - Send command Down, wait %.2f seconds and then send command Stop",
+                   ppos, (float)delta_delay/1000);
           rtsDevices[remoteId].sendCommandDown();
-          ESP_LOGI("somfy", "POS %u", ppos);
-          ESP_LOGI("somfy", "Send command Down, wait %u seconds and then send command Stop", (int)(delta_delay/1000));
-          delay(delta_delay);
-          rtsDevices[remoteId].sendCommandStop();
         }
+        delay(delta_delay);
+        rtsDevices[remoteId].sendCommandStop();
       }
 
       // Publish new state
