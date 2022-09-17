@@ -1,7 +1,6 @@
 #include "SomfyRts.h"
 #include <FS.h>
 #include <LITTLEFS.h>
-#define SPIFFS LittleFS
 
 SomfyRts::SomfyRts(uint32_t remoteID, bool debug) {
     _debug = debug;
@@ -189,12 +188,12 @@ void SomfyRts::sendCommandProgGrail() {
 
 uint16_t SomfyRts::_readRemoteRollingCode() {
   uint16_t code = 0;
-  if (!SPIFFS.begin()) {
+  if (!LittleFS.begin()) {
     Serial.println("Failed to mount file system");
   }
-  if (SPIFFS.exists(_getConfigFilename())) {
+  if (LittleFS.exists(_getConfigFilename())) {
     Serial.println("Reading config");
-    File f = SPIFFS.open(_getConfigFilename(), "r");
+    File f = LittleFS.open(_getConfigFilename(), "r");
     if (f) {
       String line = f.readStringUntil('\n');
       code = line.toInt();
@@ -206,17 +205,17 @@ uint16_t SomfyRts::_readRemoteRollingCode() {
   }
   // mudar
   // if (_remoteId==1184513) code=0;
-  SPIFFS.end();
+  LittleFS.end();
   return code;
 }
 
 void SomfyRts::_writeRemoteRollingCode(uint16_t code) {
 
-  if (!SPIFFS.begin()) {
+  if (!LittleFS.begin()) {
     Serial.println("Failed to mount file system");
   }
   Serial.println("Writing config");
-  File f = SPIFFS.open(_getConfigFilename(), "w");
+  File f = LittleFS.open(_getConfigFilename(), "w");
   if (f) {
     f.println(code);
     f.close();
@@ -226,7 +225,7 @@ void SomfyRts::_writeRemoteRollingCode(uint16_t code) {
   else {
     Serial.println("File creation failed");
   }
-  SPIFFS.end();
+  LittleFS.end();
 }
 
 String SomfyRts::_getConfigFilename() {
