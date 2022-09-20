@@ -6,7 +6,7 @@ using namespace esphome;
 #include <LITTLEFS.h>
 
 // cmd 11 - program mode
-// cmd 16 - porgram mode for grail curtains
+// cmd 16 - program mode for grail curtains
 // cmd 21 - delete rolling code file
 // cmd 41 - List files
 // cmd 51 - Test filesystem.
@@ -311,14 +311,14 @@ class RFsomfy : public Component, public Cover {
         ESP_LOGI("tilt","List Files");
         String str = "";
         LittleFS.begin();
-        Dir dir = LittleFS.openDir("/");
+        Dir dir = LittleFS.openDir("/data/remote");
         while (dir.next()) {
           str += dir.fileName();
           str += " / ";
           str += dir.fileSize();
           str += "\r\n";
         }
-        //ESP_LOGI("files", string2char(str));
+        ESP_LOGI("files", "%s", string2char(str));
         LittleFS.end();
       }
       
@@ -335,7 +335,7 @@ class RFsomfy : public Component, public Cover {
           ESP_LOGW("file", "Please wait 30 s for FS to be formatted");
           LittleFS.format();
           delay(30000);
-          ESP_LOGW("file", "Spiffs formatted");
+          ESP_LOGW("file", "File system formatted");
         
           File f = LittleFS.open("/formatComplete.txt", "w");
           if (!f) {
