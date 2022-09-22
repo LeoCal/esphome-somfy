@@ -432,7 +432,7 @@ class RFsomfyInfo : public PollingComponent, public TextSensor {
     }
     publish_state(tmp);
     if (bl_code) {
-      ESP_LOGW("set_code", "Atention! After set code, and it works, remove it from your YAML");
+      ESP_LOGW("set_code", "Attention! After set code, and it works, remove it from your YAML");
     }
   }
 };
