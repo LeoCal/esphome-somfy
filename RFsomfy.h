@@ -18,6 +18,7 @@ using namespace esphome;
 #define REMOTE_TX_PIN D0
 #define REMOTE_FIRST_ADDR 0x121311   // <- Change remote name and remote code here!
 #define REMOTE_COUNT 5   // <- Number of somfy blinds.
+#define REMOTE_ALL_BLINDS 4
 
 typedef enum {
   FILE_REMOTE,
@@ -26,6 +27,7 @@ typedef enum {
 
 int xcode[REMOTE_COUNT];
 uint16_t iCode[REMOTE_COUNT];
+uint8_t numBlindsPosChanged = 0;
 
 char const * string2char(String command) {
   if(command.length()!=0){
@@ -116,7 +118,7 @@ void getCodeFromAllFiles() {
 }
 
 
-class RFsomfy : public Component, public Cover {
+class RFsomfy : public PollingComponent, public Cover {
 
   private:
   int index;
@@ -182,7 +184,7 @@ class RFsomfy : public Component, public Cover {
     SomfyRts(REMOTE_FIRST_ADDR + 4)
   };
 
-  RFsomfy(int id, uint16_t open_time, uint16_t close_time) : Cover() { //register
+  RFsomfy(int id, uint16_t open_time, uint16_t close_time) : PollingComponent(15000), Cover() { //register
     index = id;
     remoteId = index;
     /* Convert opening and closing time from seconds to msec */
@@ -205,6 +207,19 @@ class RFsomfy : public Component, public Cover {
     uint16_t ppos = 100;
     ESP_LOGI("somfy", "Writing init position %u to file for RemoteId:%d", ppos, REMOTE_FIRST_ADDR + index);
     writePositionToFile(REMOTE_FIRST_ADDR + index, ppos); 
+  }
+
+  // This will be called every "update_interval" milliseconds to make sure the current state of each
+  // blind is up to date. For instance, this helps when closing multiple blinds with a single command.
+  void update() override {
+    if ((numBlindsPosChanged>0) && (index!=REMOTE_ALL_BLINDS)) {
+      uint16_t curr_ppos = getPositionFromFile(REMOTE_FIRST_ADDR + index);
+      float curr_pos = ((float)curr_ppos)/100;
+      // Publish new state
+      this->position = curr_pos;
+      this->publish_state();
+      numBlindsPosChanged--;
+    }
   }
 
   // delete rolling code 0...n
@@ -278,6 +293,15 @@ class RFsomfy : public Component, public Cover {
       // Write new position to the file
       ESP_LOGI("somfy", "Writing new position %u to file", ppos);
       writePositionToFile(REMOTE_FIRST_ADDR + index, ppos);
+
+      // If command for all covers is received (index 4), write new position to individual covers
+      // NOTE: if this is changed in esp_home.yaml file, it needs to be updated here as well
+      if (index == REMOTE_ALL_BLINDS) {
+        numBlindsPosChanged = REMOTE_ALL_BLINDS;
+        for (index = 0; index < REMOTE_ALL_BLINDS; index++) {
+          writePositionToFile(REMOTE_FIRST_ADDR + index, ppos);
+        }
+      }
     }
 
     if (call.get_stop()) {
