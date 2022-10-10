@@ -35,6 +35,8 @@ Here some instructions on how to make an antenna for 433.42Mhz transmission:
 **1st Prototype**
 ![1st Prototype](/img/20200402_111304.jpg)
 
+**2nd Prototype**
+![2nd Prototype](/img/2nd_prototype.jpg)
 
 
 ## Install:
