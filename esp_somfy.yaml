@@ -90,3 +90,8 @@ text_sensor:
 binary_sensor:
   - platform: status
     name: "RFsomfy status"
+
+# Button for remote restart of the device
+button:
+  - platform: restart
+    name: "Blinds remote restart"
