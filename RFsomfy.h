@@ -238,6 +238,7 @@ class RFsomfy : public PollingComponent, public Cover {
     traits.set_is_assumed_state(true);
     traits.set_supports_position(true);
     traits.set_supports_tilt(true); // to send other commands
+    traits.set_supports_stop(true); // support stop key
     return traits;
   }
   
